@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Electro-Spanish Flashcards</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<header><h1>Spanish Flashcards</h1></header>
+<main>
+  <section id="controls">
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
+      <label>Mode:
+        <select id="mode">
+          <option value="spanish">Spanish → English (type English)</option>
+          <option value="english">English → Spanish (type Spanish)</option>
+          <option value="random">Random (Spanish ↔ English)</option>
+        </select>
+      </label>
+      <button id="startOpen">Start Open Deck</button>
+      <button id="startComplete">Start Complete Deck</button>
+      <button id="startSentence">Start Sentence Deck</button>
+    </div>
+    <div id="counters">
+      <div>Complete deck words: <span id="completeCount">0</span></div>
+      <div>Sentences unlocked: <span id="sentencesUnlocked">0</span></div>
+      <div>Sentences mastered: <span id="sentencesMastered">0</span></div>
+      <div>Streak: <span id="streakCounter">0</span></div>
+      <div id="unlockStreakContainer" style="display: none;">Unlock streak: <span id="unlockStreak">0</span>/100</div>
+    </div>
+    <div id="lockStatus" style="margin-top: 12px; font-weight: 600;"></div>
+    <div id="browserLockoutControls" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(80,180,255,0.2);">
+      <div style="margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem;">Browser Lockout (Focus Mode):</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button data-lockout-duration="15" class="ghost" style="font-size: 0.85rem;">15 min</button>
+        <button data-lockout-duration="30" class="ghost" style="font-size: 0.85rem;">30 min</button>
+        <button data-lockout-duration="45" class="ghost" style="font-size: 0.85rem;">45 min</button>
+        <button data-lockout-duration="60" class="ghost" style="font-size: 0.85rem;">60 min</button>
+        <button data-lockout-duration="90" class="ghost" style="font-size: 0.85rem;">90 min</button>
+        <button data-lockout-duration="120" class="ghost" style="font-size: 0.85rem;">120 min</button>
+      </div>
+      <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-muted);">
+        Emergency exit: Ctrl+Shift+E
+      </div>
+    </div>
+  </section>
+
+  <section id="game" hidden>
+    <div id="gameRow">
+      <div id="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div id="sessionTimer" style="color: var(--text-muted); font-size: 0.9rem;">00:00</div>
+          <div id="cardsPerMinute" style="color: var(--text-muted); font-size: 0.9rem;">0.0 cards/min</div>
+        </div>
+        <div id="weakWordIndicator" style="display: none; color: #ffaa00; font-weight: 600; margin-bottom: 8px; text-shadow: 0 0 8px rgba(255,170,0,0.5);"></div>
+        <div id="prompt"></div>
+        <input id="answer" autocomplete="off" placeholder="Type translation and press Enter"/>
+        <div id="feedback"></div>
+        <div id="progress"></div>
+        <button id="quit">Quit</button>
+      </div>
+      <div id="streakBubble">
+        <div id="streakValue">0</div>
+        <div id="streakBest">Best: <span id="bestStreakValue">0</span></div>
+        <div id="unlockStreakBubble" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,90,200,0.3); display: none;">
+          <div style="font-size: 0.85rem; color: #ffb3f5;">Unlock Streak</div>
+          <div id="unlockStreakValue" style="font-size: 2rem; font-weight: 900; color: #ff6be9; text-shadow: 0 0 12px rgba(255,70,200,0.65);">0</div>
+        </div>
+      </div>
+    </div>
+    <div id="newCardNotification" style="display: none; position: fixed; top: 20px; right: 20px; background: var(--panel); border: 1px solid var(--panel-border); padding: 16px; border-radius: var(--radius); box-shadow: 0 0 24px rgba(55,195,255,0.4); z-index: 1000; max-width: 300px; backdrop-filter: blur(12px);"></div>
+  </section>
+  
+  <div id="lockoutOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 11, 24, 0.95); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main);">
+    <div style="text-align: center; padding: 40px;">
+      <h2 style="color: var(--accent-bright); margin-bottom: 24px; font-size: 2rem;">🔒 Focus Mode Active</h2>
+      <div style="font-size: 3rem; font-weight: 900; color: #ff6be9; margin: 32px 0; text-shadow: 0 0 24px rgba(255,70,200,0.8);" id="lockoutTimer">00:00</div>
+      <p style="color: var(--text-muted); margin-top: 24px;">Stay focused! The lockout will end automatically.</p>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 12px;">Emergency exit: Ctrl+Shift+E</p>
+    </div>
+  </div>
+
+  <section id="debug">
+    <h3>Message from Masashige Akioka:</h3>
+    <p>Commands:</p>
+    <ul>
+      <li>Don't stop now! Take the world on Amigo!</li>
+    </ul>
+    <p>Instructions:</p>
+    <ul>
+      <li>Start playing the open deck. Translate 80 frequency-ordered words. Once you have successfully translated a word 5 times in each direction (Spanish→English AND English→Spanish), you will have achieved MASTERY, and that word will be placed into the completed deck. That word will then be replaced by another word so that your open deck always contains 80 words. Reaching 4000 complete deck words means that you have reached conversational fluency.</li>
+      <li>Every 50 mastered words, the open deck will lock. Achieve a 100-streak in the Complete Deck to unlock it again.</li>
+      <li>Weak words (words you struggle with) will appear more frequently to help you learn them faster.</li>
+      <li>Use Random mode to practice both translation directions unpredictably.</li>
+      <li>Browser Lockout mode helps you stay focused by temporarily restricting browser access.</li>
+    </ul>
+    <ul>
+      <li>Once you have completed all the words in an unlocked sentence, sentence cards will start to be unlocked. Keep building up a portfolio of completed words to unlock more sentences. </li>
+    </ul>
+    <ul>
+      <li>We wish you all the best, and hope that you will master the spanish language.</li>
+    </ul>
+  </section>
+</main>
+<script src="script.js"></script>
+</body>
+</html>
